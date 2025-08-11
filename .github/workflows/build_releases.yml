@@ -26,7 +26,7 @@ jobs:
           pyinstaller --noconfirm --onefile --name "Statystyka" main.py
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: windows-exe
-          path: dist/Statystyka*
+  uses: actions/upload-artifact@v4
+  with:
+    name: windows-exe
+    path: dist/Statystyka*
