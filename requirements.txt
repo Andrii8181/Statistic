@@ -1,0 +1,8 @@
+pandas
+numpy
+matplotlib
+seaborn
+scipy
+statsmodels
+python-docx
+pyqt5==5.15.10
