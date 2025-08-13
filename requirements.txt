@@ -1,8 +1,9 @@
 pandas
 numpy
-matplotlib
-seaborn
 scipy
 statsmodels
+pingouin
+matplotlib
+seaborn
 python-docx
-pyqt5==5.15.10
+PyQt5
