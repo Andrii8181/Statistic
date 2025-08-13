@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from scipy.stats import shapiro, pearsonr, spearmanr
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
