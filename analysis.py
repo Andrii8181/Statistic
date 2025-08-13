@@ -1,43 +1,39 @@
-# analysis.py
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy import stats
+import numpy as np
+from scipy.stats import shapiro, pearsonr, spearmanr
 import statsmodels.api as sm
 from statsmodels.formula.api import ols
-import docx
+import pingouin as pg
 
-def run_analysis(df):
-    # Перевірка нормальності (Shapiro–Wilk)
-    shapiro_results = {col: stats.shapiro(df[col].dropna()) for col in df.select_dtypes(include='number').columns}
+def check_normality(data):
+    stat, p = shapiro(data)
+    return p  # P-value
 
-    # Побудова графіків
-    plt.figure(figsize=(8, 6))
-    sns.boxplot(data=df.select_dtypes(include='number'))
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig("boxplot.png")
-    plt.close()
+def one_way_anova(df, factor, value):
+    model = ols(f"{value} ~ C({factor})", data=df).fit()
+    anova_table = sm.stats.anova_lm(model, typ=2)
+    return anova_table
 
-    # Однофакторний приклад ANOVA
-    if df.shape[1] >= 2:
-        formula = f'{df.columns[0]} ~ C({df.columns[1]})'
-        model = ols(formula, data=df).fit()
-        anova_table = sm.stats.anova_lm(model, typ=2)
+def two_way_anova(df, factor1, factor2, value):
+    model = ols(f"{value} ~ C({factor1}) + C({factor2}) + C({factor1}):C({factor2})", data=df).fit()
+    anova_table = sm.stats.anova_lm(model, typ=2)
+    return anova_table
+
+def three_way_anova(df, f1, f2, f3, value):
+    model = ols(f"{value} ~ C({f1})*C({f2})*C({f3})", data=df).fit()
+    anova_table = sm.stats.anova_lm(model, typ=2)
+    return anova_table
+
+def correlation(df, col1, col2, method="pearson"):
+    if method == "pearson":
+        return pearsonr(df[col1], df[col2])
     else:
-        anova_table = None
+        return spearmanr(df[col1], df[col2])
 
-    # Збереження у Word
-    doc = docx.Document()
-    doc.add_heading("Результати статистичного аналізу", 0)
-    doc.add_paragraph("Перевірка нормальності (Shapiro–Wilk):")
-    for col, res in shapiro_results.items():
-        doc.add_paragraph(f"{col}: W={res[0]:.4f}, p={res[1]:.4f}")
-    if anova_table is not None:
-        doc.add_paragraph("ANOVA:")
-        doc.add_paragraph(str(anova_table))
-    doc.add_picture("boxplot.png", width=docx.shared.Inches(5))
-    output_path = "result.docx"
-    doc.save(output_path)
+def regression(df, x, y):
+    model = ols(f"{y} ~ {x}", data=df).fit()
+    return model.summary()
 
-    return output_path
+def effect_size_eta_squared(df, factor, value):
+    aov = pg.anova(data=df, dv=value, between=factor, detailed=True)
+    return aov[["Source", "np2"]]
